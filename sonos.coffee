@@ -20,43 +20,43 @@ module.exports = (env) ->
 
     class SonosPlayer extends env.devices.Device
 
-    	_state: null
-    	_currentTitle: null
-    	_currentArtist: null
-    	_volume: null
+        _state: null
+        _currentTitle: null
+        _currentArtist: null
+        _volume: null
 
-    	actions:
-    	  play:
-    	    description: "starts playing"
-    	  pause:
-    	    description: "pauses playing"
-    	  stop:
-    	    description: "stops playing"
-    	  next:
-    	    description: "play next song"
-    	  previous:
-    	    description: "play previous song"
-    	  volume:
-    	    description: "Change volume of player"
+        actions:
+          play:
+            description: "starts playing"
+          pause:
+            description: "pauses playing"
+          stop:
+            description: "stops playing"
+          next:
+            description: "play next song"
+          previous:
+            description: "play previous song"
+          volume:
+            description: "Change volume of player"
 
-    	attributes:
-    	  currentArtist:
-    	    description: "the current playing track artist"
-    	    type: "string"
-    	  currentTitle:
-    	    description: "the current playing track title"
-    	    type: "string"
-    	  state:
-    	    description: "the current state of the player"
-    	    type: "string"
-    	  volume:
-    	    description: "the volume of the player"
-    	    type: "string"
+        attributes:
+          currentArtist:
+            description: "the current playing track artist"
+            type: "string"
+          currentTitle:
+            description: "the current playing track title"
+            type: "string"
+          state:
+            description: "the current state of the player"
+            type: "string"
+          volume:
+            description: "the volume of the player"
+            type: "string"
 
-    	template: "musicplayer"
+        template: "musicplayer"
 
-    	constructor: (@config, lastState) ->
-    		@_sonosClient = new Sonos(config.host, config.port || 1400)
+        constructor: (@config, lastState) ->
+            @_sonosClient = new Sonos(config.host, config.port || 1400)
             super()
 
         getState: () ->
