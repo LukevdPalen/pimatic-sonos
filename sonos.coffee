@@ -133,3 +133,9 @@ module.exports = (env) ->
                     resolve(msg)
                 )
         );
+
+  # ###Finally
+  # Create a instance of my plugin
+  sonosPlugin = new SonosPlugin
+  # and return it to the framework.
+  return sonosPlugin
