@@ -10,7 +10,7 @@ pimatic plugin for controlling the [Sonos Music Player](http://www.sonos.com/).
 
 ```json
 {
-  "id": "Sonos-player",
+  "id": "sonos-player",
   "name": "Living room",
   "class": "SonosPlayer",
   "host": "192.168.1.102",
