@@ -7,7 +7,8 @@ module.exports ={
     properties:
       port:
         description: "The port of sonos player"
-        type: "number"
+        type: "number",
+        default: 1400
       host:
         description: "The address of sonos player"
         type: "string"

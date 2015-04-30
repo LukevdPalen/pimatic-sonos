@@ -1,24 +1,24 @@
 module.exports = (env) ->
 
-  # Require the  bluebird promise library
-  Promise = env.require 'bluebird'
+    # Require the  bluebird promise library
+    Promise = env.require 'bluebird'
 
-  Sonos = require 'Sonos'
+    Sonos = require 'Sonos'
 
-  class SonosPlugin extends env.plugins.Plugin
+    class SonosPlugin extends env.plugins.Plugin
 
-    init: (app, @framework, @config) =>
+        init: (app, @framework, @config) =>
 
-      deviceConfigDef = require("./device-config-schema")
+          deviceConfigDef = require("./device-config-schema")
 
-      @framework.deviceManager.registerDeviceClass("SonosPlayer", {
-        configDef: deviceConfigDef.SonosPlayer,
-        createCallback: (config, lastState) ->
-          device = new SonosPlayer(config, lastState)
-          return device
-      })
+          @framework.deviceManager.registerDeviceClass("SonosPlayer", {
+            configDef: deviceConfigDef.SonosPlayer,
+            createCallback: (config, lastState) ->
+              device = new SonosPlayer(config, lastState)
+              return device
+          })
 
-	class SonosPlayer extends env.devices.Device
+    class SonosPlayer extends env.devices.Device
 
     	_state: null
     	_currentTitle: null
@@ -55,9 +55,9 @@ module.exports = (env) ->
 
     	template: "musicplayer"
 
-    	constructor: (@config) ->
-
+    	constructor: (@config, lastState) ->
     		@_sonosClient = new Sonos(config.host, config.port || 1400)
+            super()
 
         getState: () ->
           return Promise.resolve @_state
