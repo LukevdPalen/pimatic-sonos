@@ -1,0 +1,27 @@
+{
+  "name": "pimatic-sonos",
+  "version": "0.0.1",
+  "description": "Sonos Plugin for the pimatic home automation framework",
+  "main": "sonos",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lukevdpalen/pimatic-sonos.git"
+  },
+  "peerDependencies": {
+    "pimatic": "0.8.*"
+  },
+  "keywords": [
+    "sonos",
+    "pimatic",
+    "domotica"
+  ],
+  "author": "Luke van der Palen <lukevdpalen@gmail.com>",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/lukevdpalen/pimatic-sonos/issues"
+  },
+  "homepage": "https://github.com/lukevdpalen/pimatic-sonos",
+  "dependencies": {
+    "sonos": "^0.8.0"
+  }
+}
