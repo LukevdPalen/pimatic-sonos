@@ -3,6 +3,9 @@ module.exports = (env) ->
     # Require the  bluebird promise library
     Promise = env.require 'bluebird'
 
+    # Require the [cassert library](https://github.com/rhoot/cassert).
+    assert = env.require 'cassert'
+
     {Sonos} = require 'sonos'
 
     class SonosPlugin extends env.plugins.Plugin
