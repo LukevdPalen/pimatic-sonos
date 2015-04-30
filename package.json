@@ -10,6 +10,13 @@
   "peerDependencies": {
     "pimatic": "0.8.*"
   },
+ "files": [
+    "sonos.coffee",
+    "README.md",
+    "sonos-config-schema.coffee",
+    "device-config-schema.coffee"
+  ],
+  "configSchema": "sonos-config-schema.coffee",
   "keywords": [
     "sonos",
     "pimatic",
