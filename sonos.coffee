@@ -3,7 +3,7 @@ module.exports = (env) ->
     # Require the  bluebird promise library
     Promise = env.require 'bluebird'
 
-    Sonos = require 'Sonos'
+    {Sonos} = require 'Sonos'
 
     class SonosPlugin extends env.plugins.Plugin
 
