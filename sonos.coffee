@@ -2,7 +2,7 @@ module.exports = (env) ->
 
   # Require the  bluebird promise library
   Promise = env.require 'bluebird'
-  
+
   Sonos = require 'Sonos'
 
   class SonosPlugin extends env.plugins.Plugin
@@ -25,7 +25,7 @@ module.exports = (env) ->
 	_currentArtist: null
 	_volume: null
 
-	actions: 
+	actions:
 	  play:
 	    description: "starts playing"
 	  pause:
@@ -42,7 +42,7 @@ module.exports = (env) ->
 	attributes:
 	  currentArtist:
 	    description: "the current playing track artist"
-	    type: "string"   
+	    type: "string"
 	  currentTitle:
 	    description: "the current playing track title"
 	    type: "string"
@@ -57,4 +57,4 @@ module.exports = (env) ->
 
 	constructor: (@config) ->
 
-		@sonosClient = new Sonos(config.host,config.port || 1400)
+		@sonosClient = new Sonos(config.host, config.port || 1400)
