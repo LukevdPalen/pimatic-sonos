@@ -62,17 +62,10 @@ module.exports = (env) ->
       @name = config.name
       @id = config.id
 
-
-      sonosClient = new Sonos(config.host, config.port)
-
-      # Promise.promisifyAll(sonosClient.prototype);
-
-      @_sonosClient = sonosClient
+      @_sonosClient = new Sonos(config.host, config.port)
 
       @_updateInfo()
-
       setInterval( ( => @_updateInfo() ), @config.interval)
-
 
       super()
 
@@ -89,9 +82,9 @@ module.exports = (env) ->
 
     stop:() -> @_sonosClient.stopAsync().then((state)  => @_setState(state))
 
-    next:() -> @_sonosClient.nextAsync()
+    next:() -> @_sonosClient.nextAsync().then(()  => @_getCurrentSong())
 
-    previous:() -> @_sonosClient.previousAsync()
+    previous:() -> @_sonosClient.previousAsync().then(()  => @_getCurrentSong())
 
     setVolume: (volume) -> @_sonosClient.setVolumeAsync(volume).then((volume)  => @_setVolume(volume))
 
