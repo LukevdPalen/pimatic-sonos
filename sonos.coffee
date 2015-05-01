@@ -103,10 +103,10 @@ module.exports = (env) ->
     _setState: (state) ->
       if @_state isnt state
         switch state
-        when 'playing' then state = 'play'
-        when 'paused' then state = 'pause'
-        when 'stopped' then state = 'stop'
-        else state = 'unknown'
+          when 'playing' then state = 'play'
+          when 'paused' then state = 'pause'
+          when 'stopped' then state = 'stop'
+          else state = 'unknown'
 
         @_state = state
         @emit 'state', state
