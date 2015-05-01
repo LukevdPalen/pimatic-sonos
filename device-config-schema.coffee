@@ -12,5 +12,9 @@ module.exports ={
       host:
         description: "The address of sonos player"
         type: "string"
+      interval:
+        interval: "Interval in ms so read the sonos state"
+        type: "integer"
+        default: 5000
   }
 }
