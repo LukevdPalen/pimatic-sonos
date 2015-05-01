@@ -1,3 +1,5 @@
+[![npm version](https://badge.fury.io/js/pimatic-sonos.svg)](http://badge.fury.io/js/pimatic-sonos)
+
 pimatic-sonos
 ===========
 
