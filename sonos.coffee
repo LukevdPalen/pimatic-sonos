@@ -6,6 +6,9 @@ module.exports = (env) ->
   # Require the [cassert library](https://github.com/rhoot/cassert).
   assert = env.require 'cassert'
 
+  M = env.matcher
+  _ = env.require('lodash')
+
   {Sonos} = require 'sonos'
 
   Promise.promisifyAll(Sonos.prototype);
@@ -20,6 +23,13 @@ module.exports = (env) ->
         configDef: deviceConfigDef.SonosPlayer,
         createCallback: (config) -> new SonosPlayer(config)
       })
+
+      @framework.ruleManager.addActionProvider(new SonosPauseActionProvider(@framework))
+      @framework.ruleManager.addActionProvider(new SonosPlayActionProvider(@framework))
+      @framework.ruleManager.addActionProvider(new SonosVolumeActionProvider(@framework))
+      @framework.ruleManager.addActionProvider(new SonosPrevActionProvider(@framework))
+      @framework.ruleManager.addActionProvider(new SonosNextActionProvider(@framework))
+
 
   class SonosPlayer extends env.devices.Device
 
@@ -88,10 +98,16 @@ module.exports = (env) ->
 
     setVolume: (volume) -> @_sonosClient.setVolumeAsync(volume).then((volume)  => @_setVolume(volume))
 
-    _updateInfo: -> Promise.all([@_getStatus(), @_getVolume, @_getCurrentSong()])
+    _updateInfo: -> Promise.all([@_getStatus(), @_getVolume(), @_getCurrentSong()])
 
     _setState: (state) ->
       if @_state isnt state
+        switch state
+        when 'playing' then state = 'play'
+        when 'paused' then state = 'pause'
+        when 'stopped' then state = 'stop'
+        else state = 'unknown'
+
         @_state = state
         @emit 'state', state
 
@@ -124,6 +140,333 @@ module.exports = (env) ->
       @_sonosClient.currentTrackAsync().then( (info) =>
         @_setCurrentArtist(info.artist)
         @_setCurrentTitle(info.title)
+      )
+
+  # Pause play volume actions
+  class SonosPauseActionProvider extends env.actions.ActionProvider
+
+    constructor: (@framework) ->
+# ### executeAction()
+      ###
+      This function handles action in the form of `execute "some string"`
+      ###
+    parseAction: (input, context) =>
+
+      retVar = null
+
+      sonosPlayers = _(@framework.deviceManager.devices).values().filter(
+        (device) => device.hasAction("play")
+      ).value()
+
+      if sonosPlayers.length is 0 then return
+
+      device = null
+      match = null
+
+      onDeviceMatch = ( (m, d) -> device = d; match = m.getFullMatch() )
+
+      m = M(input, context)
+      .match('pause ')
+      .matchDevice(sonosPlayers, onDeviceMatch)
+
+      if match?
+        assert device?
+        assert typeof match is "string"
+        return {
+        token: match
+        nextInput: input.substring(match.length)
+        actionHandler: new SonosPauseActionHandler(device)
+        }
+      else
+        return null
+
+  class SonosPauseActionHandler extends env.actions.ActionHandler
+
+    constructor: (@device) -> #nop
+
+    executeAction: (simulate) =>
+      return (
+        if simulate
+          Promise.resolve __("would pause %s", @device.name)
+        else
+          @device.pause().then( => __("paused %s", @device.name) )
+      )
+
+  # stop play volume actions
+  class MpdStopActionProvider extends env.actions.ActionProvider
+
+    constructor: (@framework) ->
+# ### executeAction()
+      ###
+      This function handles action in the form of `execute "some string"`
+      ###
+    parseAction: (input, context) =>
+
+      retVar = null
+
+      sonosPlayers = _(@framework.deviceManager.devices).values().filter(
+        (device) => device.hasAction("play")
+      ).value()
+
+      if sonosPlayers.length is 0 then return
+
+      device = null
+      match = null
+
+      onDeviceMatch = ( (m, d) -> device = d; match = m.getFullMatch() )
+
+      m = M(input, context)
+      .match('stop ')
+      .matchDevice(sonosPlayers, onDeviceMatch)
+
+      if match?
+        assert device?
+        assert typeof match is "string"
+        return {
+        token: match
+        nextInput: input.substring(match.length)
+        actionHandler: new MpdStopActionHandler(device)
+        }
+      else
+        return null
+
+  class MpdStopActionHandler extends env.actions.ActionHandler
+
+    constructor: (@device) -> #nop
+
+    executeAction: (simulate) =>
+      return (
+        if simulate
+          Promise.resolve __("would stop %s", @device.name)
+        else
+          @device.stop().then( => __("stop %s", @device.name) )
+      )
+
+  class SonosPlayActionProvider extends env.actions.ActionProvider
+
+    constructor: (@framework) ->
+# ### executeAction()
+      ###
+      This function handles action in the form of `execute "some string"`
+      ###
+    parseAction: (input, context) =>
+
+      retVar = null
+
+      sonosPlayers = _(@framework.deviceManager.devices).values().filter(
+        (device) => device.hasAction("play")
+      ).value()
+
+      if sonosPlayers.length is 0 then return
+
+      device = null
+      match = null
+
+      onDeviceMatch = ( (m, d) -> device = d; match = m.getFullMatch() )
+
+      m = M(input, context)
+      .match('play ')
+      .matchDevice(sonosPlayers, onDeviceMatch)
+
+      if match?
+        assert device?
+        assert typeof match is "string"
+        return {
+        token: match
+        nextInput: input.substring(match.length)
+        actionHandler: new MpdPlayActionHandler(device)
+        }
+      else
+        return null
+
+  class MpdPlayActionHandler extends env.actions.ActionHandler
+
+    constructor: (@device) -> #nop
+
+    executeAction: (simulate) =>
+      return (
+        if simulate
+          Promise.resolve __("would play %s", @device.name)
+        else
+          @device.play().then( => __("playing %s", @device.name) )
+      )
+
+  class SonosVolumeActionProvider extends env.actions.ActionProvider
+
+    constructor: (@framework) ->
+# ### executeAction()
+      ###
+      This function handles action in the form of `execute "some string"`
+      ###
+    parseAction: (input, context) =>
+
+      retVar = null
+      volume = null
+
+      sonosPlayers = _(@framework.deviceManager.devices).values().filter(
+        (device) => device.hasAction("play")
+      ).value()
+
+      if sonosPlayers.length is 0 then return
+
+      device = null
+      valueTokens = null
+      match = null
+
+      onDeviceMatch = ( (m, d) -> device = d; match = m.getFullMatch() )
+
+      M(input, context)
+      .match('change volume of ')
+      .matchDevice(sonosPlayers, (next,d) =>
+        next.match(' to ', (next) =>
+          next.matchNumericExpression( (next, ts) =>
+            m = next.match('%', optional: yes)
+            if device? and device.id isnt d.id
+              context?.addError(""""#{input.trim()}" is ambiguous.""")
+              return
+            device = d
+            valueTokens = ts
+            match = m.getFullMatch()
+          )
+        )
+      )
+
+
+      if match?
+        value = valueTokens[0]
+        assert device?
+        assert typeof match is "string"
+        value = parseFloat(value)
+        if value < 0.0
+          context?.addError("Can't dim to a negativ dimlevel.")
+          return
+        if value > 100.0
+          context?.addError("Can't dim to greaer than 100%.")
+          return
+        return {
+        token: match
+        nextInput: input.substring(match.length)
+        actionHandler: new MpdVolumeActionHandler(@framework,device,valueTokens)
+        }
+      else
+        return null
+
+  class MpdVolumeActionHandler extends env.actions.ActionHandler
+
+    constructor: (@framework, @device, @valueTokens) -> #nop
+
+    executeAction: (simulate, value) =>
+      return (
+        if isNaN(@valueTokens[0])
+          val = @framework.variableManager.getVariableValue(@valueTokens[0].substring(1))
+        else
+          val = @valueTokens[0]
+        if simulate
+          Promise.resolve __("would set volume of %s to %s", @device.name, val)
+        else
+          @device.setVolume(val).then( => __("set volume of %s to %s", @device.name, val) )
+      )
+
+  class SonosNextActionProvider extends env.actions.ActionProvider
+
+    constructor: (@framework) ->
+# ### executeAction()
+      ###
+      This function handles action in the form of `execute "some string"`
+      ###
+    parseAction: (input, context) =>
+
+      retVar = null
+      volume = null
+
+      sonosPlayers = _(@framework.deviceManager.devices).values().filter(
+        (device) => device.hasAction("play")
+      ).value()
+
+      if sonosPlayers.length is 0 then return
+
+      device = null
+      valueTokens = null
+      match = null
+
+      onDeviceMatch = ( (m, d) -> device = d; match = m.getFullMatch() )
+
+      m = M(input, context)
+      .match(['play next', 'next '])
+      .match(" song ", optional: yes)
+      .matchDevice(sonosPlayers, onDeviceMatch)
+
+      if match?
+        assert device?
+        assert typeof match is "string"
+        return {
+        token: match
+        nextInput: input.substring(match.length)
+        actionHandler: new SonosNextActionHandler(device)
+        }
+      else
+        return null
+
+  class SonosNextActionHandler extends env.actions.ActionHandler
+    constructor: (@device) -> #nop
+
+    executeAction: (simulate) =>
+      return (
+        if simulate
+          Promise.resolve __("would play next track of %s", @device.name)
+        else
+          @device.next().then( => __("play next track of %s", @device.name) )
+      )
+
+  class SonosPrevActionProvider extends env.actions.ActionProvider
+
+    constructor: (@framework) ->
+# ### executeAction()
+      ###
+      This function handles action in the form of `execute "some string"`
+      ###
+    parseAction: (input, context) =>
+
+      retVar = null
+      volume = null
+
+      sonosPlayers = _(@framework.deviceManager.devices).values().filter(
+        (device) => device.hasAction("play")
+      ).value()
+
+      if sonosPlayers.length is 0 then return
+
+      device = null
+      valueTokens = null
+      match = null
+
+      onDeviceMatch = ( (m, d) -> device = d; match = m.getFullMatch() )
+
+      m = M(input, context)
+      .match(['play previous', 'previous '])
+      .match(" song ", optional: yes)
+      .matchDevice(sonosPlayers, onDeviceMatch)
+
+      if match?
+        assert device?
+        assert typeof match is "string"
+        return {
+        token: match
+        nextInput: input.substring(match.length)
+        actionHandler: new SonosNextActionHandler(device)
+        }
+      else
+        return null
+
+  class MpdPrevActionHandler extends env.actions.ActionHandler
+    constructor: (@device) -> #nop
+
+    executeAction: (simulate) =>
+      return (
+        if simulate
+          Promise.resolve __("would play previous track of %s", @device.name)
+        else
+          @device.previous().then( => __("play previous track of %s", @device.name) )
       )
 
 

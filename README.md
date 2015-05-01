@@ -38,3 +38,5 @@ if buttonPrev is pressed then play previous song Music
 Currently no predicates for the sonos plugin. If you would like to do something when the state changes u could use the attribute predicate.<br>
 if $sonos-player.state equals \"play\" then switch speakers on <br>
 if $sonos-player.state equals \"pause\" then switch speakers off <br>
+if $sonos-player.currentArtist equals \"rick astley\" then switch speakers off <br>
+if $sonos-player.currentTitle equals \"coco jambo\" then change volume of sonos-player to 20 <br>
