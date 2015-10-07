@@ -11,7 +11,7 @@ module.exports = (env) ->
 
   {Sonos} = require 'sonos'
 
-  Promise.promisifyAll(Sonos.prototype);
+  Promise.promisifyAll(Sonos.prototype) ;
 
   class SonosPlugin extends env.plugins.Plugin
 
@@ -22,13 +22,13 @@ module.exports = (env) ->
       @framework.deviceManager.registerDeviceClass("SonosPlayer", {
         configDef: deviceConfigDef.SonosPlayer,
         createCallback: (config) -> new SonosPlayer(config)
-      })
+      } )
 
-      @framework.ruleManager.addActionProvider(new SonosPauseActionProvider(@framework))
-      @framework.ruleManager.addActionProvider(new SonosPlayActionProvider(@framework))
-      @framework.ruleManager.addActionProvider(new SonosVolumeActionProvider(@framework))
-      @framework.ruleManager.addActionProvider(new SonosPrevActionProvider(@framework))
-      @framework.ruleManager.addActionProvider(new SonosNextActionProvider(@framework))
+      @framework.ruleManager.addActionProvider(new SonosPauseActionProvider(@framework) )
+      @framework.ruleManager.addActionProvider(new SonosPlayActionProvider(@framework) )
+      @framework.ruleManager.addActionProvider(new SonosVolumeActionProvider(@framework) )
+      @framework.ruleManager.addActionProvider(new SonosPrevActionProvider(@framework) )
+      @framework.ruleManager.addActionProvider(new SonosNextActionProvider(@framework) )
 
 
   class SonosPlayer extends env.devices.Device
@@ -84,30 +84,30 @@ module.exports = (env) ->
 
     getCurrentTitle: () -> Promise.resolve(@_currentTitle)
     getCurrentArtist: () -> Promise.resolve(@_currentTitle)
-    getVolume: ()  -> Promise.resolve(@_volume)
+    getVolume: () -> Promise.resolve(@_volume)
 
-    play:() -> @_sonosClient.playAsync().then((state) => @_setState(state))
+    play: () -> @_sonosClient.playAsync().then((state) => @_setState(state) )
 
-    pause:() -> @_sonosClient.pauseAsync().then((state) => @_setState(state))
+    pause: () -> @_sonosClient.pauseAsync().then((state) => @_setState(state) )
 
-    stop:() -> @_sonosClient.stopAsync().then((state)  => @_setState(state))
+    stop: () -> @_sonosClient.stopAsync().then((state) => @_setState(state) )
 
-    next:() -> @_sonosClient.nextAsync().then(()  => @_getCurrentSong())
+    next: () -> @_sonosClient.nextAsync().then(() => @_getCurrentSong() )
 
-    previous:() -> @_sonosClient.previousAsync().then(()  => @_getCurrentSong())
+    previous: () -> @_sonosClient.previousAsync().then(() => @_getCurrentSong() )
 
-    setVolume: (volume) -> @_sonosClient.setVolumeAsync(volume).then((volume)  => @_setVolume(volume))
+    setVolume: (volume) -> @_sonosClient.setVolumeAsync(volume).then((volume) => @_setVolume(volume) )
 
-    _updateInfo: -> Promise.all([@_getStatus(), @_getVolume(), @_getCurrentSong()])
+    _updateInfo: -> Promise.all([@_getStatus(), @_getVolume(), @_getCurrentSong() ])
 
     _setState: (state) ->
-      if @_state isnt state
-        switch state
-          when 'playing' then state = 'play'
-          when 'paused' then state = 'pause'
-          when 'stopped' then state = 'stop'
-          else state = 'unknown'
+      switch state
+        when 'playing' then state = 'play'
+        when 'paused' then state = 'pause'
+        when 'stopped' then state = 'stop'
+        else state = 'unknown'
 
+      if @_state isnt state
         @_state = state
         @emit 'state', state
 
@@ -317,12 +317,12 @@ module.exports = (env) ->
 
       M(input, context)
       .match('change volume of ')
-      .matchDevice(sonosPlayers, (next,d) =>
+      .matchDevice(sonosPlayers, (next, d) =>
         next.match(' to ', (next) =>
           next.matchNumericExpression( (next, ts) =>
             m = next.match('%', optional: yes)
             if device? and device.id isnt d.id
-              context?.addError(""""#{input.trim()}" is ambiguous.""")
+              context? .addError(""""#{input.trim()}" is ambiguous.""")
               return
             device = d
             valueTokens = ts
@@ -338,15 +338,15 @@ module.exports = (env) ->
         assert typeof match is "string"
         value = parseFloat(value)
         if value < 0.0
-          context?.addError("Can't dim to a negativ dimlevel.")
+          context? .addError("Can't dim to a negativ dimlevel.")
           return
         if value > 100.0
-          context?.addError("Can't dim to greaer than 100%.")
+          context? .addError("Can't dim to greaer than 100%.")
           return
         return {
         token: match
         nextInput: input.substring(match.length)
-        actionHandler: new MpdVolumeActionHandler(@framework,device,valueTokens)
+        actionHandler: new MpdVolumeActionHandler(@framework, device, valueTokens)
         }
       else
         return null
@@ -358,7 +358,7 @@ module.exports = (env) ->
     executeAction: (simulate, value) =>
       return (
         if isNaN(@valueTokens[0])
-          val = @framework.variableManager.getVariableValue(@valueTokens[0].substring(1))
+          val = @framework.variableManager.getVariableValue(@valueTokens[0].substring(1) )
         else
           val = @valueTokens[0]
         if simulate
@@ -471,4 +471,3 @@ module.exports = (env) ->
 
 
   sonosPlugin = new SonosPlugin
-  return sonosPlugin
