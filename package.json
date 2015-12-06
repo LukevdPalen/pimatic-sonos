@@ -1,6 +1,6 @@
 {
   "name": "pimatic-sonos",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "Sonos Plugin for the pimatic home automation framework",
   "main": "sonos",
   "repository": {
