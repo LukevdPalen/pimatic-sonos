@@ -29,6 +29,6 @@
   },
   "homepage": "https://github.com/lukevdpalen/pimatic-sonos",
   "dependencies": {
-    "sonos": "^0.8.0"
+    "sonos": "0.8.0"
   }
 }
