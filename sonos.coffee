@@ -32,7 +32,7 @@ module.exports = (env) ->
       @id = @config.id
       env.logger.debug("Connection to sonos #{@config.host}:#{@config.port}")
 
-      @_sonosClient = new Sonos(config.host, config.port)
+      @_sonosClient = new Sonos(@config.host, @config.port)
 
       @_updateInfo()
       setInterval( ( => @_updateInfo() ), @config.interval)
