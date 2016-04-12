@@ -28,8 +28,8 @@ module.exports = (env) ->
   class SonosPlayer extends env.devices.AVPlayer
 
     constructor: (@config) ->
-      @name = config.name
-      @id = config.id
+      @name = @config.name
+      @id = @config.id
       env.logger.debug("Connection to sonos #{@config.host}:#{@config.port}")
 
       @_sonosClient = new Sonos(config.host, config.port)
