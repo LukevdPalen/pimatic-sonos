@@ -1,6 +1,6 @@
 {
   "name": "pimatic-sonos",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Sonos Plugin for the pimatic home automation framework",
   "main": "sonos",
   "repository": {
@@ -8,9 +8,9 @@
     "url": "https://github.com/lukevdpalen/pimatic-sonos.git"
   },
   "peerDependencies": {
-    "pimatic": "0.8.*"
+    "pimatic": ">=0.8.0 <1.0.0"
   },
- "files": [
+  "files": [
     "sonos.coffee",
     "README.md",
     "sonos-config-schema.coffee",
@@ -29,6 +29,6 @@
   },
   "homepage": "https://github.com/lukevdpalen/pimatic-sonos",
   "dependencies": {
-    "sonos": ">=0.8.0 <1.0.0"
+    "sonos": "^0.14.0"
   }
 }

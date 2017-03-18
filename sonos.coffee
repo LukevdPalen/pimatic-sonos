@@ -11,7 +11,7 @@ module.exports = (env) ->
 
   {Sonos} = require 'sonos'
 
-  Promise.promisifyAll(Sonos.prototype) ;
+  Promise.promisifyAll(Sonos.prototype)
 
   class SonosPlugin extends env.plugins.Plugin
 
@@ -23,7 +23,10 @@ module.exports = (env) ->
         configDef: deviceConfigDef.SonosPlayer,
         createCallback: (config) -> new SonosPlayer(config)
       } )
-
+     
+      @framework.ruleManager.addActionProvider(
+        new SonosPlaySonosUriActionProvider(@framework,@config)
+      )
 
   class SonosPlayer extends env.devices.AVPlayer
 
@@ -35,7 +38,7 @@ module.exports = (env) ->
       @_sonosClient = new Sonos(@config.host, @config.port)
 
       @_updateInfo()
-      setInterval( ( => @_updateInfo() ), @config.interval)
+      @interval = setInterval( ( => @_updateInfo() ), @config.interval)
 
       super()
 
@@ -47,6 +50,8 @@ module.exports = (env) ->
     getVolume: () -> Promise.resolve(@_volume)
 
     play: () -> @_sonosClient.playAsync().then((state) => @_setState(state) )
+    
+    playUri: (uri) -> @_sonosClient.playAsync(uri).then((state) => @_setState(state) )
 
     pause: () -> @_sonosClient.pauseAsync().then((state) => @_setState(state) )
 
@@ -101,7 +106,76 @@ module.exports = (env) ->
         @_setCurrentArtist(info.artist)
         @_setCurrentTitle(info.title)
       )
+    
+    destroy: ->
+      clearInterval(@interval)
+      super()
+  ###
+  Provides set spotify action, so that rules can use `play <spotify-id> on <device>`
+  ###
 
+  class SonosPlaySonosUriActionProvider extends env.actions.ActionProvider
+    constructor: (@framework,@config) ->
+
+    parseAction: (input, context) =>
+      retVar = null
+
+      sonosPlayers = _(@framework.deviceManager.devices).values().filter(
+        (device) => device.hasAction("play")
+      ).value()
+      
+      if sonosPlayers.length is 0 then return
+
+      device = null
+      match = null
+
+      onDeviceMatch = ( (m, d) -> device = d; match = m.getFullMatch() )
+
+      # spotify:track:<id>
+      # spotify:album:<id>
+      # spotify:artistTopTracks:<id>
+      # spotify:user:<userid>:playlist:<id>
+
+      M(input, context)
+        .match([
+          /play (spotify:(track\b|album\b|artist\b|TopTracks):(?:(?:\w|-){22})) on /g,
+          /play (spotify:user:\w+:playlist:(?:(?:\w|-){22})) on /g
+        ],  (m, s) -> 
+          uri = s.trim()
+        )
+        # .match('play test on ')
+        .matchDevice(sonosPlayers, onDeviceMatch)
+
+
+      if match?
+        assert device?
+        # assert typeof uri is "string"
+        return {
+          token: match
+          nextInput: input.substring(match.length)
+          # actionHandler: new SonosPlaySonosUriActionHandler(device, "spotify:user:spotify:playlist:37i9dQZF1DWZpxQttCP3Ig")
+          actionHandler: new SonosPlaySonosUriActionHandler(device, uri)
+        }
+      else
+        return null
+
+  class SonosPlaySonosUriActionHandler extends env.actions.ActionHandler
+    constructor: (@device,@uri)  -> #nop
+
+    setup: ->
+      @dependOnDevice(@device)
+      super()
+    
+    executeAction: (simulate) =>
+      env.logger.log("playing %s on %s", @uri, @device.name)
+      return (
+        if simulate
+          Promise.resolve __("would play %s", @device.name)
+        else
+          @device
+            .playUri(@uri)
+            .then( => __("playing %s on %s", @uri, @device.name) )
+      )
 
   sonosPlugin = new SonosPlugin
   return sonosPlugin

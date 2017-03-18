@@ -25,6 +25,9 @@ pimatic plugin for controlling the [Sonos Music Player](http://www.sonos.com/).
 <b>Play music</b><br>
 if smartphone is present then play sonos-player
 
+<b>Play spotify uri</b><br>
+if smartphone is present then play <sonos-id> on sonos-player
+
 <b>Pause music</b><br>
 if smartphone is absent then pause sonos-player
 
