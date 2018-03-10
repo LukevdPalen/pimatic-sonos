@@ -35,7 +35,7 @@ module.exports = (env) ->
       @_sonosClient = new Sonos(@config.host, @config.port)
 
       @_updateInfo()
-      setInterval( ( => @_updateInfo() ), @config.interval)
+      @device_interval = setInterval( ( => @_updateInfo() ), @config.interval)
 
       super()
 
@@ -101,6 +101,11 @@ module.exports = (env) ->
         @_setCurrentArtist(info.artist)
         @_setCurrentTitle(info.title)
       )
+
+    destroy: ->
+      clearInterval(@device_interval)
+      super()
+
 
 
   sonosPlugin = new SonosPlugin
